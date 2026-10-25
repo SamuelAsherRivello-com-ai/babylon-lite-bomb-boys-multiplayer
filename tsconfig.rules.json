@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.config.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "rootDir": "bomberman-clone/src/game",
+    "outDir": "output/compiled-rules"
+  },
+  "include": ["bomberman-clone/src/game/rules.ts"]
+}

@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 const repositoryRoot = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  base: '/babylon-lite-bomberman-clone/',
+  base: '/babylon-lite-bomb-boys-multiplayer/',
   plugins: [react()],
   root: 'bomberman-clone',
   server: {

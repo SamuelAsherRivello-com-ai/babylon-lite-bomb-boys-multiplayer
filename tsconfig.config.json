@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM"],
+    "types": ["node", "@webgpu/types", "webxr"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": false,
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": [
+    "vite.config.ts",
+    "scripts/deployment-assets.ts",
+    "scripts/check-deployment-assets.ts",
+    "bomberman-clone/test/page.test.ts",
+    "scripts/compile-rules.ts",
+    "bomberman-clone/src/game/rules.ts"
+  ]
+}

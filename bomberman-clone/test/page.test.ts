@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import config from '../../vite.config.js';
+import config from '../../vite.config.ts';
 import { presentation } from '../src/content/renderer.js';
 test('project identity, layout and production subpath', async () => {
-  assert.equal(config.base, '/babylon-lite-bomberman-clone/');
+  assert.equal(config.base, '/babylon-lite-bomb-boys-multiplayer/');
   assert.equal(config.root, 'bomberman-clone');
   const page = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(page, /<title>Bomberman Clone<\/title>/);
@@ -27,7 +27,7 @@ test('pixel presentation uses integer grid-derived render dimensions for every m
     [15, 13, 32, 480, 416],
     [19, 15, 25, 475, 375],
     [23, 17, 20, 460, 340],
-  ];
+  ] as const;
   for (const [columns, rows, tilePixels, renderWidth, renderHeight] of expected) {
     const map = presentation(480, 416, 1, { width: columns * 16, height: rows * 16 });
     assert.equal(map.tilePixels, tilePixels);

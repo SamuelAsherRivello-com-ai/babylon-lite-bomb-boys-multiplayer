@@ -15,3 +15,7 @@ node_modules/
 
 # Temporary verification scripts and isolated upstream checkouts.
 .tmp/
+
+# Generated from strictly checked rules.ts before tests, development and build.
+bomberman-clone/src/game/rules.js
+output/

@@ -7,3 +7,6 @@ bomberman-clone/documentation/
 README.md
 AGENTS.md
 CONTRIBUTING.md
+
+bomberman-clone/src/game/rules.js
+output/

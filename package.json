@@ -5,13 +5,19 @@
   "scripts": {
     "dev": "node scripts/dev-multiplayer.mjs",
     "dev:vite": "vite",
-    "build": "vite build",
+    "build": "npm run typecheck:config && vite build && node --experimental-strip-types scripts/check-deployment-assets.ts",
     "preview": "vite preview",
-    "format": "prettier --write \"bomberman-clone/src/**/*.{js,jsx,css}\" \"bomberman-clone/test/**/*.mjs\" \"scripts/**/*.mjs\" vite.config.js package.json",
-    "format:check": "prettier --check \"bomberman-clone/src/**/*.{js,jsx,css}\" \"bomberman-clone/test/**/*.mjs\" \"scripts/**/*.mjs\" vite.config.js package.json",
-    "test": "node --test bomberman-clone/test/*.test.mjs",
+    "format": "prettier --write \"bomberman-clone/src/**/*.{js,jsx,ts,css}\" \"bomberman-clone/test/**/*.{mjs,ts}\" \"scripts/**/*.{mjs,ts}\" vite.config.ts package.json",
+    "format:check": "prettier --check \"bomberman-clone/src/**/*.{js,jsx,ts,css}\" \"bomberman-clone/test/**/*.{mjs,ts}\" \"scripts/**/*.{mjs,ts}\" vite.config.ts package.json",
+    "test": "node --test bomberman-clone/test/*.test.mjs bomberman-clone/test/page.test.ts",
     "test:browser": "node bomberman-clone/test/online-browser.mjs",
-    "test:spectator-browser": "node bomberman-clone/test/spectator-browser.mjs"
+    "test:spectator-browser": "node bomberman-clone/test/spectator-browser.mjs",
+    "typecheck:config": "tsc -p tsconfig.config.json",
+    "compile:rules": "node --experimental-strip-types scripts/compile-rules.ts",
+    "pretest": "npm run compile:rules",
+    "prebuild": "npm run compile:rules",
+    "predev": "npm run compile:rules",
+    "predev:vite": "npm run compile:rules"
   },
   "dependencies": {
     "@babylonjs/lite": "1.32.0",
@@ -22,7 +28,11 @@
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
+    "@types/node": "24.19.2",
+    "@types/webxr": "0.5.24",
+    "@webgpu/types": "0.1.71",
     "prettier": "3.9.9",
+    "typescript": "5.9.3",
     "vite": "^8.3.0"
   }
 }
