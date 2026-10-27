@@ -1689,3 +1689,26 @@ kbd {
 .surface[data-aspect='portrait'] .practice-game-panel .instructions {
   grid-row: 4;
 }
+
+/* Keep room controls between the fixed header and footer in short embeds. */
+.online-game-panel > .panel-header {
+  grid-area: 1 / 1;
+}
+.online-game-panel > .panel-content,
+.online-game-panel > .overlay {
+  grid-area: 2 / 1;
+}
+.online-game-panel > .panel-footer {
+  grid-area: 3 / 1;
+}
+.online-game-panel > .overlay {
+  position: relative;
+  inset: auto;
+  min-height: 0;
+  justify-content: flex-start;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+.online-game-panel > .overlay > * {
+  flex-shrink: 0;
+}
