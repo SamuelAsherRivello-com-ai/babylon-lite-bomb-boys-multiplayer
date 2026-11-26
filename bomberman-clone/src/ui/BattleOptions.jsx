@@ -116,7 +116,7 @@ export function PowerupLegend() {
         [5, 'Glove', 'Push bombs until they hit an obstacle; lasts this life'],
         [6, 'Lightning', 'Invulnerable for ten seconds'],
       ].map(([frame, name, meaning]) => (
-        <div key={name}>
+        <div key={name} title={`${name}: ${meaning}`}>
           <span
             className="pickup-icon"
             style={{

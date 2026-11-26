@@ -1,3 +1,4 @@
+import { TouchControls } from './ui/TouchControls.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { MultiplayerClient } from '@rmc/multiplayer-client';
 import { ReconciledView } from './game/prediction.js';
@@ -342,6 +343,7 @@ export function Online({ aspect, onExit }) {
             <aside className="legend-rail menu-section menu-section-controls">
               <PowerupLegend />
             </aside>
+            <TouchControls controls={controls} />
             <div className="instructions online-instructions menu-section menu-section-instructions">
               MOVE <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> · BOMB <kbd>SPACE</kbd> · GAMEPAD: STICK /
               D-PAD + FACE BUTTON

@@ -1,3 +1,4 @@
+import { TouchControls } from './ui/TouchControls.jsx';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createGame, stepGame, STEP } from './game/rules.js';
 import { createGameRenderer } from './content/renderer.js';
@@ -360,6 +361,7 @@ function Practice({ aspect, onOnline }) {
             <section className="menu-section menu-section-powerups">
               <PowerupLegend />
             </section>
+            <TouchControls controls={controls} />
             <div className="instructions menu-section menu-section-instructions">
               MOVE <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> · BOMB <kbd>SPACE</kbd> · GAMEPAD: STICK /
               D-PAD + FACE BUTTON
