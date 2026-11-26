@@ -33,7 +33,7 @@ import { BattleOptions, PowerupLegend } from './ui/BattleOptions.jsx';
 import { createScreenTransition } from './ui/screen-transition.js';
 const COLORS = ['Mint', 'Amber', 'Violet', 'Rose'];
 
-export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
+export function Online({ aspect, onExit }) {
   const sound = useArcadeAudio();
   const [bombFlash, setBombFlash] = useState(loadBombFlash),
     flash = useRef(bombFlash);
@@ -52,7 +52,6 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
   };
   const clearSettings = () => {
     clearLocalStorage();
-    onResetPreferences();
     flash.current = true;
     setBombFlash(true);
     explosion.current = 'classic';
@@ -217,6 +216,28 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
     const roomCode = new URL(window.location.href).searchParams.get('room')?.trim().toUpperCase();
     if (/^[A-Z0-9]{6}$/.test(roomCode || '')) connect({ code: roomCode });
   }, []);
+  const restart = () => {
+    const previousClient = client.current;
+    client.current = null;
+    previousClient?.disconnect();
+    controls.current?.clear();
+    view.current = new ReconciledView();
+    screenTransitionRef.current = createScreenTransition();
+    setScreenTransition({
+      parent: 'game-world',
+      type: 'screen-door',
+      phase: 'idle',
+      progress: 1,
+      easedProgress: 1,
+    });
+    setWaitingRound(null);
+    setSession({ status: 'idle' });
+    setCode('');
+    setShareMessage('');
+    const url = new URL(window.location.href);
+    url.searchParams.delete('room');
+    window.history.replaceState(window.history.state, '', url);
+  };
   const toggleSettings = () => {
     menu.current = !menu.current;
     controls.current?.clear();
@@ -263,7 +284,7 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
           />
         </div>
         <section
-          className="menu-view game-panel online-menu-view online-game-panel"
+          className={`menu-view game-panel online-menu-view online-game-panel${!rendererError && (!g || session.status !== 'connected') ? ' room-entry-panel' : ''}`}
           data-information-panel
           {...gestures.current.panel}
         >
@@ -271,7 +292,14 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
             <header className="corner corner_top_left">
               <h1>Bomberman Clone</h1>
             </header>
-            <TopNav online onModeChange={onExit} />
+            <TopNav
+              online
+              onModeChange={onExit}
+              onRestart={
+                session.status === 'connected' && g?.phase === 'playing' ? restart : undefined
+              }
+              showGithub={false}
+            />
           </header>
           <div className="panel-content">
             <section className="menu-section menu-section-status">
@@ -315,7 +343,8 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
               <PowerupLegend />
             </aside>
             <div className="instructions online-instructions menu-section menu-section-instructions">
-              MOVE <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> · BOMB <kbd>SPACE</kbd>
+              MOVE <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> · BOMB <kbd>SPACE</kbd> · GAMEPAD: STICK /
+              D-PAD + FACE BUTTON
               <span>Place. Escape. Outlast.</span>
             </div>
           </div>
@@ -325,7 +354,6 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
             </section>
             <div className="corner corner_bottom_right">
               v{versionText.trim().replace(/^version=/, '')}
-              <span>ONLINE MULTIPLAYER</span>
             </div>
           </footer>
           {rendererError && (
@@ -336,11 +364,8 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
             </div>
           )}
           {!rendererError && (!g || session.status !== 'connected') && (
-            <div className="overlay">
-              <h2>Battle with friends</h2>
-              <p role="status">
-                {session.error || 'Create a private room or enter your friend’s code.'}
-              </p>
+            <div className="overlay room-entry">
+              {session.error && <p role="status">{session.error}</p>}
               <div className="room-actions">
                 <section className="room-action">
                   <div className="room-action-content">
@@ -385,79 +410,28 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
               <div className="lobby-card">
                 <div className="lobby-heading">
                   <div>
-                    <span className="lobby-kicker">PRIVATE ROOM</span>
                     <h2>Room {g.code}</h2>
                   </div>
                   <span className="lobby-phase">LOBBY</span>
                 </div>
-                <p className="lobby-intro">Four fighters. Every human readies up.</p>
-
-                <section className="lobby-section lobby-rules">
-                  <div className="lobby-section-heading">
-                    <h3>Battle rules</h3>
-                    <span>
-                      {g.hostId === session.sessionId ? 'HOST CONTROLS' : 'HOST SETS RULES'}
-                    </span>
-                  </div>
-                  <BattleOptions
-                    options={
-                      g.options || { cpu: 'MED', map: 'LOW', plant: false, chainReaction: false }
-                    }
-                    showChainReaction={Object.hasOwn(g.options || {}, 'chainReaction')}
-                    disabled={g.hostId !== session.sessionId}
-                    mode="online"
-                    onModeChange={onExit}
-                    onChange={(patch) => {
-                      saveBattleOptions({ ...loadBattleOptions(), ...g.options, ...patch });
-                      client.current?.send('options', patch);
-                    }}
-                    bombFlash={bombFlash}
-                    onBombFlash={changeFlash}
-                    explosionStyle={explosionStyle}
-                    onExplosionStyle={changeExplosionStyle}
-                  />
-                </section>
-
-                <section className="lobby-section lobby-share">
-                  <div>
-                    <h3>Invite your fighters</h3>
-                    <p>Share the room link before the five-minute host limit expires.</p>
-                  </div>
-                  <button onClick={share}>Copy room link</button>
-                  <span className="share-message" role="status">
-                    {shareMessage}
-                  </span>
-                </section>
-
-                <section className="lobby-section lobby-players">
-                  <div className="lobby-section-heading">
-                    <h3>Fighters</h3>
-                    <span>{g.people.length}/4 SEATS</span>
-                  </div>
-                  <ul>
-                    {g.people.map((p) => (
-                      <li key={p.id} className={`lobby-player lobby-player-${p.color}`}>
-                        <span className="lobby-player-name">
-                          <i aria-hidden="true" />
-                          {p.id === me?.id ? 'YOU' : p.name}
-                        </span>
-                        <span>{COLORS[p.color]}</span>
-                        <span>
-                          {p.cpu
-                            ? 'CPU'
-                            : p.connected
-                              ? p.ready
-                                ? 'READY'
-                                : 'WAITING'
-                              : 'RECONNECTING'}{' '}
-                          · {p.score} WINS
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                <div className="lobby-ready-row">
+                <div className="lobby-primary-actions">
+                  <button
+                    className="lobby-ready-button"
+                    onClick={() => client.current?.send('ready')}
+                  >
+                    {me?.ready ? 'Cancel ready' : 'Ready up'}
+                  </button>
+                  <button className="lobby-settings-button" onClick={toggleSettings}>
+                    Settings
+                  </button>
+                  <button className="lobby-share-button" onClick={share}>
+                    Copy room link
+                  </button>
+                </div>
+                <span className="share-message" role="status">
+                  {shareMessage}
+                </span>
+                <div className="lobby-details">
                   <div className="lobby-colors" aria-label="Choose fighter color">
                     <span>YOUR COLOR</span>
                     <div>
@@ -475,15 +449,40 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
                       ))}
                     </div>
                   </div>
-                  <div className="lobby-start-group">
-                    <span>START GAME</span>
-                    <button
-                      className="lobby-ready-button"
-                      onClick={() => client.current?.send('ready')}
-                    >
-                      {me?.ready ? 'Cancel ready' : 'Ready up'}
-                    </button>
-                  </div>
+                  <section className="lobby-section lobby-players">
+                    <div className="lobby-section-heading">
+                      <h3>Fighters</h3>
+                      <span>{g.people.length}/4 SEATS</span>
+                    </div>
+                    <ul>
+                      {Array.from({ length: 4 }, (_, index) => {
+                        const p = g.people[index];
+                        if (!p)
+                          return (
+                            <li key={`empty-${index}`} className="lobby-player">
+                              Open
+                            </li>
+                          );
+                        const status = p.cpu
+                          ? 'CPU'
+                          : !p.connected
+                            ? 'Reconnecting'
+                            : p.ready
+                              ? 'Ready'
+                              : 'Waiting';
+                        return (
+                          <li
+                            key={p.id}
+                            className={`lobby-player lobby-player-${p.color}`}
+                            title={`${p.name} · ${status} · ${p.score} wins`}
+                          >
+                            <span className="lobby-player-name">{COLORS[p.color]}</span>
+                            <span>{p.id === me?.id ? `You · ${status}` : status}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
                 </div>
               </div>
             </div>
@@ -540,43 +539,76 @@ export function Online({ aspect, onExit, onAspectChange, onResetPreferences }) {
             </div>
           )}
           {settings && (
-            <div className="overlay settings-overlay">
-              <div className="settings-content">
-                <h2>Settings</h2>
-                <AudioSettings sound={sound} />
-                <button
-                  className="settings-toggle-button"
-                  type="button"
-                  aria-pressed={aspect === 'portrait'}
-                  onClick={onAspectChange}
-                >
-                  Aspect: {aspect === 'landscape' ? 'Landscape' : 'Portrait'}
-                </button>
-                <button
-                  onClick={() => {
-                    const operation = document.fullscreenElement
-                      ? document.exitFullscreen()
-                      : document.documentElement.requestFullscreen();
-                    operation?.catch(() => {});
-                  }}
-                >
-                  Fullscreen
-                </button>
-                <button onClick={clearSettings}>Clear Local Storage</button>
-                {clearMessage && <p role="status">{clearMessage}</p>}
-                {invite && (
-                  <>
-                    <p>
-                      <button onClick={share}>Copy room link</button>
-                    </p>
-                    <p className="share-message" role="status">
-                      {shareMessage}
-                    </p>
-                  </>
-                )}
-                <button className="settings-back-button" onClick={toggleSettings}>
-                  Back
-                </button>
+            <div
+              className="overlay settings-overlay"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Settings"
+            >
+              <div className="settings-content online-settings-content">
+                <div className="online-settings-body">
+                  <h2>Settings</h2>
+                  <div className="online-settings-group">
+                    {session.status === 'connected' && g?.phase === 'lobby' && (
+                      <section className="lobby-section lobby-rules">
+                        <div className="lobby-section-heading">
+                          <h3>Battle rules</h3>
+                          <span>
+                            {g.hostId === session.sessionId ? 'HOST CONTROLS' : 'HOST SETS RULES'}
+                          </span>
+                        </div>
+                        <BattleOptions
+                          options={
+                            g.options || {
+                              cpu: 'MED',
+                              map: 'LOW',
+                              plant: false,
+                              chainReaction: false,
+                            }
+                          }
+                          showChainReaction={Object.hasOwn(g.options || {}, 'chainReaction')}
+                          disabled={g.hostId !== session.sessionId}
+                          mode="online"
+                          onModeChange={onExit}
+                          onChange={(patch) => {
+                            saveBattleOptions({ ...loadBattleOptions(), ...g.options, ...patch });
+                            client.current?.send('options', patch);
+                          }}
+                          bombFlash={bombFlash}
+                          onBombFlash={changeFlash}
+                          explosionStyle={explosionStyle}
+                          onExplosionStyle={changeExplosionStyle}
+                        />
+                      </section>
+                    )}
+                    <AudioSettings sound={sound} />
+                    <button
+                      onClick={() => {
+                        const operation = document.fullscreenElement
+                          ? document.exitFullscreen()
+                          : document.documentElement.requestFullscreen();
+                        operation?.catch(() => {});
+                      }}
+                    >
+                      Fullscreen
+                    </button>
+                    <button onClick={clearSettings}>Clear Local Storage</button>
+                    {clearMessage && <p role="status">{clearMessage}</p>}
+                    {invite && (
+                      <>
+                        <p>
+                          <button onClick={share}>Copy room link</button>
+                        </p>
+                        <p className="share-message" role="status">
+                          {shareMessage}
+                        </p>
+                      </>
+                    )}
+                    <button className="settings-back-button" onClick={toggleSettings}>
+                      Back
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

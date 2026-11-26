@@ -77,8 +77,8 @@ input:focus-visible {
 }
 
 .surface {
-  --view-width: min(100vw, calc(100dvh * 16 / 9));
-  --view-height: calc(var(--view-width) * 9 / 16);
+  --view-width: min(100vw, calc(100dvh * 20 / 9));
+  --view-height: min(100dvh, calc(100vw * 10 / 16));
   height: 100dvh;
   display: grid;
   grid-template-columns: 1fr var(--view-width) 1fr;
@@ -87,8 +87,8 @@ input:focus-visible {
   background: #0b131b;
 }
 .surface[data-aspect='portrait'] {
-  --view-width: min(100vw, calc(100dvh * 9 / 16));
-  --view-height: calc(var(--view-width) * 16 / 9);
+  --view-width: min(100vw, calc(100dvh * 10 / 16));
+  --view-height: min(100dvh, calc(100vw * 20 / 9));
 }
 .gutter {
   min-width: 0;
@@ -647,6 +647,24 @@ kbd {
   margin: 10px auto 0;
   text-align: left;
 }
+.room-entry-panel {
+  grid-template-rows: max-content minmax(0, 1fr) max-content;
+  align-content: stretch;
+}
+.room-entry {
+  position: static;
+  grid-column: 1;
+  grid-row: 2;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.room-entry .room-actions {
+  flex: 1 0 auto;
+  margin: 0 auto;
+}
 .room-action {
   display: flex;
   flex-direction: column;
@@ -688,26 +706,23 @@ kbd {
   margin: 12px 0 0;
 }
 .lobby-overlay {
-  align-items: center;
-  justify-content: flex-start;
-  overflow-y: auto;
-  padding: clamp(18px, 4cqw, 44px);
-  background: #101d23f2;
+  z-index: 6;
+  align-items: stretch;
+  justify-content: center;
+  padding: 10px;
+  background: #101d23;
   text-align: left;
 }
 .lobby-card {
   width: min(100%, 620px);
-  margin: auto 0;
-  padding: clamp(14px, 2.2cqw, 24px);
-  background: #111f25;
-  border: 1px solid #66836c;
-  border-radius: 6px;
-  box-shadow: 0 18px 40px #07101499;
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 .lobby-heading,
 .lobby-section-heading,
-.lobby-share,
-.lobby-ready-row,
 .lobby-player {
   display: flex;
   align-items: center;
@@ -715,14 +730,12 @@ kbd {
   gap: 12px;
 }
 .lobby-heading {
-  padding-bottom: 12px;
+  padding-bottom: 6px;
   border-bottom: 1px solid #30453f;
 }
-.lobby-kicker,
 .lobby-phase,
 .lobby-section-heading > span,
-.lobby-colors > span,
-.lobby-start-group > span {
+.lobby-colors > span {
   color: #8fc9b3;
   font-size: 10px;
   letter-spacing: 1.5px;
@@ -735,13 +748,8 @@ kbd {
 .lobby-card h2 {
   margin: 4px 0 0;
   color: #f0d9a2;
-  font-size: clamp(24px, 4cqw, 34px);
+  font-size: clamp(18px, 4cqw, 28px);
   line-height: 1;
-}
-.lobby-intro {
-  margin: 14px 0 16px;
-  color: #c0d3c5;
-  font-size: 14px;
 }
 .lobby-section {
   margin-top: 10px;
@@ -761,55 +769,37 @@ kbd {
 .lobby-rules .battle-options {
   font-size: 12px;
 }
-.lobby-share {
-  background: #252f31;
-}
-.lobby-share h3 {
-  margin-bottom: 4px;
-}
-.lobby-share p {
-  margin: 0;
-  color: #aec0b6;
-  font-size: 12px;
-}
-.lobby-ready-button {
-  flex: 0 0 auto;
-  padding: 9px 14px;
-  background: #206b48;
-  border-color: #72c593;
-  color: #fff7ee;
-  font-weight: 700;
-}
-.lobby-share button {
-  flex: 0 0 auto;
-  padding: 9px 14px;
-  background: #ebc47d;
-  color: #18202a;
-  font-weight: 700;
-}
-.lobby-ready-button:hover {
-  background: #2d855b;
-}
-.lobby-share .share-message {
-  min-width: 0;
-  color: #80e4bc;
-  font-size: 11px;
-}
 .lobby-players {
   background: #252f31;
+  padding: 6px;
+  margin-top: 6px;
+}
+.lobby-players .lobby-section-heading {
+  margin-bottom: 4px;
+}
+.lobby-players .lobby-section-heading h3 {
+  font-size: 13px;
 }
 .lobby-players ul {
   display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 5px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .lobby-player {
-  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2px;
+  min-width: 0;
+  padding: 5px;
   background: #182a2f;
   color: #b9c6b8;
-  font-size: 11px;
+  font-size: 10px;
+  overflow-wrap: anywhere;
 }
 .lobby-player-name {
   display: flex;
@@ -818,13 +808,6 @@ kbd {
   min-width: 0;
   color: #eceddc;
   font-weight: 700;
-}
-.lobby-player-name i {
-  width: 8px;
-  height: 8px;
-  margin-right: 7px;
-  border-radius: 50%;
-  background: currentColor;
 }
 .lobby-player-0 .lobby-player-name {
   color: #79ded0;
@@ -838,11 +821,6 @@ kbd {
 .lobby-player-3 .lobby-player-name {
   color: #ff7fa4;
 }
-.lobby-ready-row {
-  flex-direction: column;
-  align-items: stretch;
-  margin-top: 14px;
-}
 .lobby-colors {
   flex: 1 1 auto;
   min-width: 0;
@@ -855,30 +833,53 @@ kbd {
 }
 .lobby-colors button {
   padding: 7px 10px;
-  background: #ebc47d;
-  color: #18202a;
+  border: 1px solid #a66059;
+  background: #84342f;
+  color: #fff7ee;
   font-size: 12px;
   font-weight: 700;
 }
 .lobby-colors button[aria-pressed='true'] {
-  box-shadow: inset 0 0 0 2px #fff1cc;
+  border-color: transparent;
+  background: #1d5e9c;
+  box-shadow: inset 0 0 0 1px rgb(121 184 255 / 55%);
+}
+.lobby-colors button:hover:not(:disabled) {
+  filter: brightness(1.18);
 }
 .lobby-colors button:disabled {
   opacity: 0.38;
 }
-.lobby-ready-button {
-  width: 100%;
+.lobby-primary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 6px 0;
 }
-.lobby-start-group {
+.lobby-primary-actions button {
   width: 100%;
+  min-height: 38px;
+  margin: 0;
 }
-.lobby-start-group > span {
-  display: block;
-  margin-bottom: 6px;
+.lobby-primary-actions .lobby-ready-button {
+  grid-column: 1 / -1;
+  background: #206b48;
+  border-color: #72c593;
+  color: #fff7ee;
+}
+.lobby-primary-actions .lobby-ready-button:hover {
+  background: #2d855b;
+}
+.lobby-details {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 .settings-overlay {
-  z-index: 6;
+  z-index: 7;
   align-items: center;
+  background: #101d23;
 }
 .settings-content {
   width: min(100%, 320px);
@@ -906,8 +907,52 @@ kbd {
   filter: brightness(1.18);
 }
 .settings-content .settings-back-button {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background: #000;
   color: #fff;
+}
+.online-settings-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.online-settings-body {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-rows: minmax(40px, 1fr) minmax(0, 3fr) minmax(20px, 1fr);
+  min-height: 0;
+}
+.online-settings-body h2 {
+  align-self: center;
+  margin: 0;
+  font-size: 1.6em;
+}
+.online-settings-group {
+  display: grid;
+  align-content: safe center;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+.online-settings-group > button,
+.online-settings-group > p,
+.settings-content .online-settings-group .audio-settings {
+  margin: 0;
+}
+.online-settings-content .settings-back-button {
+  position: static;
+  margin: 0;
+}
+.settings-content .lobby-rules {
+  text-align: left;
+}
+.settings-content .toggle-button-container button {
+  min-height: 36px;
+  margin: 0;
 }
 .settings-content .audio-settings {
   margin: 10px 0;
@@ -1684,7 +1729,18 @@ kbd {
   align-content: start;
 }
 .surface[data-aspect='portrait'] .game-panel {
-  grid-template-rows: max-content max-content max-content;
+  grid-template-rows: max-content minmax(0, 1fr) max-content;
+  align-content: stretch;
+  touch-action: pan-y;
+}
+.surface[data-aspect='portrait'] .panel-content {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+.surface[data-aspect='portrait'] .practice-game-panel .panel-content {
+  grid-template-rows: repeat(4, max-content);
+  align-content: start;
 }
 .surface[data-aspect='portrait'] .practice-game-panel .instructions {
   grid-row: 4;
@@ -1695,13 +1751,13 @@ kbd {
   grid-area: 1 / 1;
 }
 .online-game-panel > .panel-content,
-.online-game-panel > .overlay {
+.online-game-panel > .overlay:not(.lobby-overlay, .settings-overlay) {
   grid-area: 2 / 1;
 }
 .online-game-panel > .panel-footer {
   grid-area: 3 / 1;
 }
-.online-game-panel > .overlay {
+.online-game-panel > .overlay:not(.lobby-overlay, .settings-overlay) {
   position: relative;
   inset: auto;
   min-height: 0;
@@ -1709,6 +1765,39 @@ kbd {
   overflow-y: auto;
   touch-action: pan-y;
 }
-.online-game-panel > .overlay > * {
+.online-game-panel > .overlay:not(.lobby-overlay, .settings-overlay) > * {
   flex-shrink: 0;
+}
+
+/* Practice has no header or status row; the controls lead the panel. */
+.practice-game-panel,
+.surface[data-aspect='portrait'] .practice-game-panel {
+  grid-template-rows: minmax(0, 1fr) max-content;
+}
+.practice-game-panel .panel-content,
+.surface[data-aspect='portrait'] .practice-game-panel .panel-content {
+  grid-template-rows: repeat(3, max-content);
+}
+.practice-game-panel .menu-section-controls {
+  grid-row: 1;
+}
+.practice-game-panel .menu-section-powerups {
+  grid-row: 2;
+}
+.practice-game-panel .instructions,
+.surface[data-aspect='portrait'] .practice-game-panel .instructions {
+  grid-row: 3;
+}
+
+.surface .room-entry-panel {
+  grid-template-rows: max-content minmax(0, 1fr) max-content;
+  align-content: stretch;
+}
+.surface .room-entry-panel > .panel-content {
+  display: none;
+}
+.surface .online-game-panel .panel-header,
+.surface .online-game-panel .panel-footer {
+  align-items: center;
+  padding-block: 10px;
 }

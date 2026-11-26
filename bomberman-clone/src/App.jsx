@@ -18,12 +18,10 @@ import {
   clearLocalStorage,
   loadBattleOptions,
   loadBombFlash,
-  loadAspect,
   loadOnlineMode,
   loadExplosionStyle,
   saveBattleOptions,
   saveBombFlash,
-  saveAspect,
   saveOnlineMode,
   saveExplosionStyle,
 } from './ui/preferences.js';
@@ -45,7 +43,6 @@ export function App() {
     return loadOnlineMode();
   });
   const [coarsePointer, setCoarsePointer] = useState(() => matchMedia('(pointer: coarse)').matches);
-  const [aspectOverride, setAspectOverride] = useState(loadAspect);
   const [pendingMode, setPendingMode] = useState(null);
   const [modeTransition, setModeTransition] = useState({
     parent: 'game-world',
@@ -61,13 +58,7 @@ export function App() {
     pointer.addEventListener('change', update);
     return () => pointer.removeEventListener('change', update);
   }, []);
-  const aspect = aspectOverride ?? (coarsePointer ? 'portrait' : 'landscape');
-  const toggleAspect = () => {
-    const next = aspect === 'landscape' ? 'portrait' : 'landscape';
-    saveAspect(next);
-    setAspectOverride(next);
-  };
-  const resetPreferences = () => setAspectOverride(null);
+  const aspect = coarsePointer ? 'portrait' : 'landscape';
   const requestMode = (nextOnline) => {
     if (nextOnline === online || pendingMode !== null) return;
     setPendingMode(nextOnline);
@@ -95,19 +86,9 @@ export function App() {
   return (
     <>
       {online ? (
-        <Online
-          aspect={aspect}
-          onExit={() => requestMode(false)}
-          onAspectChange={toggleAspect}
-          onResetPreferences={resetPreferences}
-        />
+        <Online aspect={aspect} onExit={() => requestMode(false)} />
       ) : (
-        <Practice
-          aspect={aspect}
-          onOnline={() => requestMode(true)}
-          onAspectChange={toggleAspect}
-          onResetPreferences={resetPreferences}
-        />
+        <Practice aspect={aspect} onOnline={() => requestMode(true)} />
       )}
       <ModeScreenDoor transition={modeTransition} modeKey={online} />
     </>
@@ -159,7 +140,7 @@ function ModeScreenDoor({ transition, modeKey }) {
     </div>
   );
 }
-function Practice({ aspect, onOnline, onAspectChange, onResetPreferences }) {
+function Practice({ aspect, onOnline }) {
   const sound = useArcadeAudio();
   const [options, setOptions] = useState(loadBattleOptions),
     optionRef = useRef(options),
@@ -210,8 +191,7 @@ function Practice({ aspect, onOnline, onAspectChange, onResetPreferences }) {
     [paused, setPaused] = useState(false),
     [alive, setAlive] = useState(true),
     [settings, setSettings] = useState(false),
-    [clearMessage, setClearMessage] = useState(''),
-    [stats, setStats] = useState('1 BOMB · RANGE 2 · SPEED 0');
+    [clearMessage, setClearMessage] = useState('');
   useEffect(() => {
     let cancelled = false,
       renderer,
@@ -268,12 +248,9 @@ function Practice({ aspect, onOnline, onAspectChange, onResetPreferences }) {
       shown.bombFlash = flash.current;
       shown.explosionStyle = explosion.current;
       setFrozen(death.current.frozen(now));
-      const mapping = renderer.draw(screenTransitionRef.current.present(shown));
+      renderer.draw(screenTransitionRef.current.present(shown));
       sound.audio.current?.observe(game.current);
       setAlive(game.current.players[0].alive);
-      setStats(
-        `${game.current.players[0].capacity} BOMB · RANGE ${game.current.players[0].range} · SPEED ${game.current.players[0].speedLevel}`,
-      );
       frame = requestAnimationFrame(loop);
     };
     createGameRenderer(canvas.current)
@@ -314,7 +291,6 @@ function Practice({ aspect, onOnline, onAspectChange, onResetPreferences }) {
   };
   const clearSettings = () => {
     clearLocalStorage();
-    onResetPreferences();
     const defaults = { ...DEFAULT_BATTLE_OPTIONS };
     optionRef.current = defaults;
     setOptions(defaults);
@@ -368,19 +344,7 @@ function Practice({ aspect, onOnline, onAspectChange, onResetPreferences }) {
           data-information-panel
           {...gestures.current.panel}
         >
-          <header className="panel-header menu-section menu-section-header">
-            <header className="corner corner_top_left">
-              <h1>Bomberman Clone</h1>
-            </header>
-            <TopNav online={false} />
-          </header>
           <div className="panel-content">
-            <div className="hud menu-section menu-section-status">
-              <span className={alive ? 'live' : 'out'}>
-                {alive ? '● READY TO BLAST' : '● ELIMINATED'}
-              </span>
-              <span>{stats}</span>
-            </div>
             <section className="menu-section menu-section-controls">
               <BattleOptions
                 options={options}
@@ -397,7 +361,8 @@ function Practice({ aspect, onOnline, onAspectChange, onResetPreferences }) {
               <PowerupLegend />
             </section>
             <div className="instructions menu-section menu-section-instructions">
-              MOVE <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> · BOMB <kbd>SPACE</kbd>
+              MOVE <kbd>WASD</kbd> / <kbd>↑↓←→</kbd> · BOMB <kbd>SPACE</kbd> · GAMEPAD: STICK /
+              D-PAD + FACE BUTTON
               <span>Place. Escape. Repeat.</span>
             </div>
           </div>
@@ -414,15 +379,8 @@ function Practice({ aspect, onOnline, onAspectChange, onResetPreferences }) {
             <div className="overlay settings-overlay">
               <div className="settings-content">
                 <h2>Settings</h2>
+                <TopNav online={false} />
                 <AudioSettings sound={sound} />
-                <button
-                  className="settings-toggle-button"
-                  type="button"
-                  aria-pressed={aspect === 'portrait'}
-                  onClick={onAspectChange}
-                >
-                  Aspect: {aspect === 'landscape' ? 'Landscape' : 'Portrait'}
-                </button>
                 <button
                   onClick={() => {
                     const operation = document.fullscreenElement

@@ -4,13 +4,11 @@ import {
   DEFAULT_BATTLE_OPTIONS,
   DEFAULT_AUDIO_PREFERENCES,
   loadAudioPreferences,
-  loadAspect,
   loadBattleOptions,
   loadOnlineMode,
   loadExplosionStyle,
   saveBattleOptions,
   saveAudioPreferences,
-  saveAspect,
   saveOnlineMode,
   saveExplosionStyle,
 } from '../src/ui/preferences.js';
@@ -72,26 +70,6 @@ test('menu booleans and audio preferences persist across reloads', () => {
     assert.deepEqual(loadAudioPreferences(), { muted: true, volume: 0.7 });
     saveAudioPreferences({ muted: 'yes', volume: 3 });
     assert.deepEqual(loadAudioPreferences(), { muted: true, volume: 0.25 });
-  } finally {
-    globalThis.localStorage = previous;
-  }
-});
-
-test('aspect preference persists and rejects invalid values', () => {
-  const saved = new Map();
-  const previous = globalThis.localStorage;
-  globalThis.localStorage = {
-    getItem: (key) => saved.get(key) ?? null,
-    setItem: (key, value) => saved.set(key, value),
-  };
-  try {
-    assert.equal(loadAspect(), null);
-    saveAspect('portrait');
-    assert.equal(loadAspect(), 'portrait');
-    saveAspect('landscape');
-    assert.equal(loadAspect(), 'landscape');
-    saved.set('bomberman-aspect', 'square');
-    assert.equal(loadAspect(), null);
   } finally {
     globalThis.localStorage = previous;
   }

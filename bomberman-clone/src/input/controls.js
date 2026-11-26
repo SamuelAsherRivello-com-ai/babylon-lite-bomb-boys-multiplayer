@@ -1,8 +1,13 @@
+const GAMEPAD_DEADZONE = 0.35;
+
 export function createControls() {
   const keys = new Set(),
     touches = new Map();
   let bomb = false,
-    epoch = 0;
+    epoch = 0,
+    gamepadButtons = new Set(),
+    gamepadNeedsNeutral = false,
+    focused = true;
   const actions = {
     ArrowLeft: 'left',
     a: 'left',
@@ -18,6 +23,8 @@ export function createControls() {
     keys.clear();
     touches.clear();
     bomb = false;
+    gamepadButtons.clear();
+    gamepadNeedsNeutral = true;
     epoch++;
   };
   const actionFor = (e) => actions[e.key.length === 1 ? e.key.toLowerCase() : e.key];
@@ -37,13 +44,21 @@ export function createControls() {
       keys.delete(action);
     }
   };
-  const pageHide = () => clear(),
+  const blur = () => {
+      focused = false;
+      clear();
+    },
+    focus = () => {
+      focused = true;
+    },
+    pageHide = () => clear(),
     visibilityChange = () => {
       if (document.hidden) clear();
     };
   window.addEventListener('keydown', down);
   window.addEventListener('keyup', up);
-  window.addEventListener('blur', clear);
+  window.addEventListener('blur', blur);
+  window.addEventListener('focus', focus);
   window.addEventListener('pagehide', pageHide);
   document.addEventListener('visibilitychange', visibilityChange);
   return {
@@ -60,6 +75,34 @@ export function createControls() {
     },
     read() {
       const all = new Set([...keys, ...touches.values()]);
+      let pad;
+      try {
+        if (focused && !document.hidden) {
+          pad = Array.from(globalThis.navigator?.getGamepads?.() || []).find(
+            (candidate) => candidate?.connected && candidate.mapping === 'standard',
+          );
+        }
+      } catch {
+        pad = null;
+      }
+      const pressed = (index) => Boolean(pad?.buttons[index]?.pressed);
+      const x = pad?.axes[0] || 0,
+        y = pad?.axes[1] || 0;
+      const faceButtons = new Set([0, 1, 2, 3].filter(pressed));
+      const neutral =
+        Math.abs(x) <= GAMEPAD_DEADZONE &&
+        Math.abs(y) <= GAMEPAD_DEADZONE &&
+        ![12, 13, 14, 15].some(pressed) &&
+        faceButtons.size === 0;
+      if (focused && !document.hidden && (!pad || neutral)) gamepadNeedsNeutral = false;
+      if (pad && !gamepadNeedsNeutral) {
+        if (x < -GAMEPAD_DEADZONE || pressed(14)) all.add('left');
+        if (x > GAMEPAD_DEADZONE || pressed(15)) all.add('right');
+        if (y < -GAMEPAD_DEADZONE || pressed(12)) all.add('up');
+        if (y > GAMEPAD_DEADZONE || pressed(13)) all.add('down');
+        if ([...faceButtons].some((button) => !gamepadButtons.has(button))) bomb = true;
+      }
+      gamepadButtons = faceButtons;
       const pending = bomb;
       bomb = false;
       return {
@@ -72,7 +115,8 @@ export function createControls() {
       clear();
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
-      window.removeEventListener('blur', clear);
+      window.removeEventListener('blur', blur);
+      window.removeEventListener('focus', focus);
       window.removeEventListener('pagehide', pageHide);
       document.removeEventListener('visibilitychange', visibilityChange);
     },

@@ -8,8 +8,9 @@ test('project identity, layout and production subpath', async () => {
   assert.equal(config.root, 'bomberman-clone');
   const page = await readFile(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(page, /<title>Bomberman Clone<\/title>/);
-  const [app, nav] = await Promise.all([
+  const [app, online, nav] = await Promise.all([
     readFile(new URL('../src/App.jsx', import.meta.url), 'utf8'),
+    readFile(new URL('../src/Online.jsx', import.meta.url), 'utf8'),
     readFile(new URL('../src/ui/TopNav.jsx', import.meta.url), 'utf8'),
   ]);
   for (const corner of [
@@ -18,7 +19,7 @@ test('project identity, layout and production subpath', async () => {
     'corner_bottom_left',
     'corner_bottom_right',
   ])
-    assert.ok(app.includes(corner) || nav.includes(corner));
+    assert.ok(app.includes(corner) || online.includes(corner) || nav.includes(corner));
   assert.ok(nav.includes('SamuelAsherRivello/babylon-lite-bomberman-clone'));
   assert.ok(app.includes('versionText'));
 });

@@ -33,7 +33,7 @@ export function ArenaPlayers({
   const label = (color, position) => {
     const player = players?.find((entry) => entry.color === color);
     const localHuman = player && !player.cpu && player.color === localPlayerColor;
-    const text = `${position} ${player?.name || `Player ${position}`} (${player ? (player.cpu ? 'CPU' : 'Human') : 'Open'})`;
+    const text = `${player?.name || `Player ${position}`} (${player ? (player.cpu ? 'CPU' : 'Human') : 'Open'})`;
     return (
       <div
         className={`player-label${localHuman ? ' player-label-local' : ''}`}

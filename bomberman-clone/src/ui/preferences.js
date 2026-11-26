@@ -9,7 +9,6 @@ const BATTLE_OPTIONS_KEY = 'bomberman-battle-options';
 const BOMB_FLASH_KEY = 'bomberman-bomb-flash';
 const EXPLOSION_STYLE_KEY = 'bomberman-explosion-style';
 const ONLINE_MODE_KEY = 'bomberman-online-mode';
-const ASPECT_KEY = 'bomberman-aspect';
 const AUDIO_KEY = 'bomberman-audio';
 
 export const DEFAULT_AUDIO_PREFERENCES = {
@@ -60,15 +59,6 @@ export function loadOnlineMode() {
 
 export function saveOnlineMode(value) {
   localStorage.setItem(ONLINE_MODE_KEY, value ? 'online' : 'offline');
-}
-
-export function loadAspect() {
-  const value = localStorage.getItem(ASPECT_KEY);
-  return value === 'landscape' || value === 'portrait' ? value : null;
-}
-
-export function saveAspect(value) {
-  if (value === 'landscape' || value === 'portrait') localStorage.setItem(ASPECT_KEY, value);
 }
 
 export function loadAudioPreferences() {
