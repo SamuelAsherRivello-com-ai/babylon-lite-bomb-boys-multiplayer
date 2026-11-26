@@ -191,7 +191,7 @@ Explore → propose → apply → verify → sync specifications → archive →
 
 The play links above open the live game without installation or credentials. The online link goes straight to room creation and joining. Two independent public browsers previously verified a first-to-three match and fresh rematch, public assets, endpoint connectivity, controls, and scoring.
 
-Client release uses the existing Release GitHub Actions workflow and `version.txt`. After the release completes, manually run **Deploy live demo** on `main`: the workflow's version push does not trigger another GitHub Actions workflow. Pages deploys `bomberman-clone/dist/` under `/babylon-lite-bomberman-clone/`. See the [latest game release](https://github.com/SamuelAsherRivello-com-ai/babylon-lite-bomb-boys-multiplayer/releases/latest) and [pinned shared client v0.9.7](https://github.com/SamuelAsherRivello/rmc-colyseus-multiplayer-server/releases/tag/v0.9.7).
+Client release uses the Release GitHub Actions workflow and `version.txt`. Dispatch it on `main` with the full approved main commit SHA as `expected_sha`. After the release completes, manually run **Deploy live demo** on the release tag: the workflow's version push does not trigger another GitHub Actions workflow. Pages deploys `bomberman-clone/dist/` under `/babylon-lite-bomb-boys-multiplayer/`. See the [latest game release](https://github.com/SamuelAsherRivello-com-ai/babylon-lite-bomb-boys-multiplayer/releases/latest) and [pinned shared client v0.9.7](https://github.com/SamuelAsherRivello/rmc-colyseus-multiplayer-server/releases/tag/v0.9.7).
 
 ## Verification
 
